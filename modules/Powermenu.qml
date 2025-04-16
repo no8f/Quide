@@ -1,13 +1,9 @@
-import QtQuick // for Text
+import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
-import QtQuick.Controls.impl
 import QtQuick.Layouts
-import Quickshell.Services.UPower
-import Quickshell // for ShellRoot and PanelWindow
-import Quickshell.Io
+import Quickshell
 import Quickshell.Wayland
-import QtQuick.Effects
 
 import "components"
 

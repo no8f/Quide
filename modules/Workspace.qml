@@ -1,5 +1,5 @@
 import Quickshell.Hyprland
-import QtQuick // for Text
+import QtQuick
 import QtQuick.Controls.Material
 
 ListView {

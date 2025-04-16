@@ -1,13 +1,14 @@
 //@ pragma UseQApplication
 
-import Quickshell // for ShellRoot and PanelWindow
+import Quickshell
 import Quickshell.Io
-import QtQuick // for Text
-import QtQuick.Controls // for Text
-import QtQuick.Controls.Material // for Text
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtQuick.Controls.impl
 import Quickshell.Services.SystemTray
+import Quickshell.Wayland
 
 import "modules" as Modules
 
@@ -21,10 +22,10 @@ ShellRoot {
                 console.log(connected ? "new connection!" : "connection dropped!");
             }
             parser: SplitParser {
-                onRead: (message) => {
+                onRead: message => {
                     console.log(`read message from socket: ${message}`);
                     if (message == "lol")
-                        powermenu.visible = true
+                        powermenu.visible = true;
                 }
             }
         }
@@ -38,8 +39,8 @@ ShellRoot {
         anchor {
             window: bar
             rect {
-                x: bar.width - ( width + 10 )
-                y:  - ( height + 10 )
+                x: bar.width - (width + 10)
+                y: -(height + 10)
             }
         }
 
@@ -59,14 +60,16 @@ ShellRoot {
             bottom: 10
         }
 
-        visible: true
+        visible: false
     }
 
     PanelWindow {
         id: systray_menu_popup
 
-        property var menu_model
-        property var menu_model_items
+        property var menu_model: null
+        property var menu_model_items: menu_opener.children
+
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
         anchors {
             right: true
@@ -80,47 +83,120 @@ ShellRoot {
 
         color: "transparent"
 
-        //height: 10
-        width: 200
-        height: 300
-        // width: 200
-        // height: 300
-        visible: false
+        width: 230
+        height: 500
+        visible: menu_model != null
 
         Pane {
+            id: menu_content_frame
             anchors.fill: parent
 
             background: Pane {
-                Material.roundedScale: Material.MediumScale
-                opacity: 0.5
+                Material.roundedScale: Material.SmallScale
+                opacity: 0.2
             }
 
-            // Label {
-            //     anchors.centerIn: parent
-            //     text: "test"
-            // }
-
             ListView {
+                id: menu_list_view
                 anchors.fill: parent
 
-                width: contentItem.width
-                height: contentItem.height
-
                 model: systray_menu_popup.menu_model_items
+                interactive: false
 
-                delegate: Rectangle {
-                    width: 50
-                    height: 50
-                    color: "red"
+                onContentHeightChanged: {
+                    systray_menu_popup.height = contentHeight + (menu_content_frame.padding * 2) + 1;
+
+                    systray_menu_popup.visible = false;
+                    if (systray_menu_popup.menu_model != null)
+                        systray_menu_popup.visible = true;
+                }
+
+                Component {
+                    id: menu_checkbox
+                    CheckBox {
+                        text: modelData.text
+                        checkState: modelData.checkState
+                        enabled: modelData.enabled
+                    }
+                }
+
+                Component {
+                    id: menu_radiobutton
+                    RadioButton {
+                        text: modelData.text
+                        checked: modelData.checkState == Qt.Checked
+                        enabled: modelData.enabled
+                    }
+                }
+
+                Component {
+                    id: menu_button
+                    RowLayout {
+                        enabled: modelData.enabled
+                        Button {
+                            visible: modelData.hasChildren
+                            implicitWidth: implicitHeight / 1.5
+                            Material.roundedScale: Material.ExtraSmallScale
+                            icon.source: "icons/ChevronLeft.svg"
+                            flat: true
+                            onClicked: {
+                                modelData.display(systray_menu_popup, 0, 0);
+                            }
+                        }
+                        Button {
+                            Layout.fillWidth: true
+                            Material.roundedScale: Material.ExtraSmallScale
+                            flat: true
+                            text: modelData.text
+                            icon.source: modelData.icon
+                            onClicked: {
+                                modelData.triggered();
+                            }
+                        }
+                    }
+                }
+
+                Component {
+                    id: menu_seperator
+                    Rectangle {
+                        height: 2
+                        radius: height
+                        width: parent.width
+                        opacity: 0.1
+                        color: Material.background
+                    }
+                }
+
+                delegate: Loader {
+                    required property var modelData
+
+                    width: menu_list_view.width
+
+                    sourceComponent: {
+                        switch (modelData.buttonType) {
+                        case QsMenuButtonType.CheckBox:
+                            return menu_checkbox;
+                            break;
+                        case QsMenuButtonType.RadioButton:
+                            return menu_radiobutton;
+                            break;
+                        case QsMenuButtonType.None:
+                            {
+                                if (modelData.isSeparator)
+                                    return menu_seperator;
+                                else
+                                    return menu_button;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
 
         QsMenuOpener {
+            id: menu_opener
             menu: systray_menu_popup.menu_model
-            onMenuChanged: {
-                systray_menu_popup.menu_model_items = children;
-            }
         }
     }
 
@@ -138,11 +214,7 @@ ShellRoot {
 
         Pane {
             id: root_rect
-            // center the bar in its parent component (the window)
             anchors.fill: parent
-            //radius: 14
-
-            //color: "transparent"//palette.window
             background: Rectangle {
                 opacity: 0.1
                 color: Material.background
@@ -170,13 +242,25 @@ ShellRoot {
                             Layout.preferredWidth: modelData.title === "Network" ? 24 : 35 / 2
 
                             TapHandler {
-                                onTapped: {
-                                    //systray_item_root.modelData.activate();
-                                    //systray_menu_popup.menu_model = systray_item_root.modelData.menu;
-                                    systray_item_root.modelData.activate();
-                                }
-                                onLongPressed: {
-                                    systray_item_root.modelData.display(bar, bar.width, -5);
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                onTapped: (eventPoint, button) => {
+                                    switch (button) {
+                                    case Qt.LeftButton:
+                                        {
+                                            if (!modelData.onlyMenu) {
+                                                systray_item_root.modelData.activate();
+                                                break;
+                                            }
+                                            // fallthrough
+                                        }
+                                    case Qt.RightButton:
+                                        {
+                                            if (systray_menu_popup.menu_model == null || systray_menu_popup.menu_model != systray_item_root.modelData.menu)
+                                                systray_menu_popup.menu_model = systray_item_root.modelData.menu;
+                                            else
+                                                systray_menu_popup.menu_model = null;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -186,8 +270,7 @@ ShellRoot {
                 Modules.Clock {
                     TapHandler {
                         onTapped: {
-                            //systray_menu_popup.visible = !systray_menu_popup.visible;
-                            calendar_widget.visible = !calendar_widget.visible
+                            calendar_widget.visible = !calendar_widget.visible;
                         }
                     }
                 }

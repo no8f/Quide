@@ -1,19 +1,15 @@
-import QtQuick // for Text
+import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Controls.impl
 import QtQuick.Layouts
-import Quickshell.Services.UPower
-import Quickshell // for ShellRoot and PanelWindow
-import Quickshell.Io
-import Quickshell.Wayland
-import QtQuick.Effects
+import Quickshell
 import Quickshell.Services.Notifications
 
 PopupWindow {
     id: notification_list_root_window
 
-    height: 1//notification_list.height
+    height: 1
 
     color: "transparent"
 
@@ -188,6 +184,9 @@ PopupWindow {
                 RowLayout {
                     Layout.fillWidth: true
                     IconImage {
+                        Layout.preferredWidth: 64
+                        Layout.preferredHeight: 64
+
                         source: delegate_root.modelData.image
                         visible: status == Image.Ready
                     }

@@ -1,5 +1,5 @@
 import Quickshell.Io
-import QtQuick // for Text
+import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.impl
 
