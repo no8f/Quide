@@ -8,7 +8,7 @@ import Quickshell.Wayland
 PanelWindow {
     id: root
     width: 350
-    height: 400
+    height: 450
 
     color: "transparent"
 
@@ -20,24 +20,24 @@ PanelWindow {
     Pane {
         anchors.fill: parent
         anchors.margins: 5
-
-        background: Rectangle {
-            color: Material.background
-            radius: 7
-            opacity: 0.2
-        }
+        Material.elevation: 3
 
         ColumnLayout {
             anchors.fill: parent
 
+            Clock {
+                Layout.alignment: Qt.AlignHCenter
+                font.pixelSize: 36
+                font.bold: true
+                format: "hh:mm:ss"
+            }
+
             Pane {
                 Layout.fillWidth: true
 
-                background: Pane {
-                    Material.elevation: 8
-                    Material.roundedScale: Material.LargeScale
-                    opacity: 0.6
-                }
+                Material.elevation: 4
+                Material.roundedScale: Material.LargeScale
+                Material.background: Material.primary
 
                 topPadding: 6
                 bottomPadding: topPadding
@@ -53,8 +53,8 @@ PanelWindow {
                         TapHandler {
                             acceptedButtons: Qt.RightButton
                             onTapped: (mouse, button) => {
-                                grid.year = root.currentYear
-                                grid.month = root.currentMonth
+                                grid.year = root.currentYear;
+                                grid.month = root.currentMonth;
                             }
                         }
                     }
@@ -139,8 +139,8 @@ PanelWindow {
                     Layout.fillHeight: true
 
                     Component.onCompleted: {
-                        root.currentYear = year
-                        root.currentMonth = month
+                        root.currentYear = year;
+                        root.currentMonth = month;
                     }
 
                     delegate: Button {

@@ -15,7 +15,7 @@ Repeater {
         property bool perc_visibel: false
 
         required property var modelData
-        visible: perc != 0
+        visible: modelData.isLaptopBattery
 
         IconLabel {
             property int icon_state: Math.round(10 / (100 / battery_applet.perc))

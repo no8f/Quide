@@ -1,18 +1,16 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import Quickshell
 
 Label {
     id: timeText
+    property string format: "hh:mm"
     font.pixelSize: 16
-    text: Qt.formatTime(new Date(), "hh:mm")
+    text: Qt.formatDateTime(clock.date, format)
 
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: {
-            timeText.text = Qt.formatTime(new Date(), "hh:mm");
-        }
+    SystemClock {
+        id: clock
+        precision: SystemClock.Seconds
     }
 }

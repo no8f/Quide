@@ -2,13 +2,16 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.impl
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
-IconLabel {
-    Layout.fillHeight: true
-
-    icon.width: 35 / 2
+Button {
     icon.source: "../icons/image_next.svg"
-    icon.color: palette.text
+    highlighted: true
+    flat: true
+    implicitHeight: 36
+    implicitWidth: implicitHeight
+    Material.roundedScale: Material.ExtraSmallScale
 
     Process {
         id: changewallpaper_process

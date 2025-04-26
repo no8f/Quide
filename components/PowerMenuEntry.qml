@@ -86,7 +86,7 @@ Item {
         IconLabel {
             anchors.centerIn: parent
 
-            icon.source: "../"+powermenu_entry.modelData.icon
+            icon.source: powermenu_entry.modelData.icon
             icon.color: palette.text
             icon.width: 64
         }

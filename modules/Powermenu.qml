@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 
-import "components"
+import "../components"
 
 PanelWindow {
     id: powermenu
@@ -19,12 +19,13 @@ PanelWindow {
 
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.namespace: "quidepowermenu"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     color: {
-        var color = Material.background
-        color.a = 0.2
-        return color
+        var color = Material.primary;
+        color.a = 0.4;
+        return color;
     }
 
     ListModel {
